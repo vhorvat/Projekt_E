@@ -1,0 +1,58 @@
+<launch>
+<plugin name='gazebo_occupancy_map' filename='libgazebo_2Dmap_plugin.so'>
+    <map_resolution>0.1</map_resolution> <!-- in meters, optional, default 0.1 -->
+    <map_height>0.3</map_height>         <!-- in meters, optional, default 0.3 -->
+    <map_size_x>10</map_size_x>          <!-- in meters, optional, default 10 -->
+    <map_size_y>10</map_size_y>          <!-- in meters, optional, default 10 -->
+    <init_robot_x>0</init_robot_x>          <!-- x coordinate in meters, optional, default 0 -->
+    <init_robot_y>0</init_robot_y>          <!-- y coordinate in meters, optional, default 0 -->
+</plugin>
+<remap from="tf" to="/bebop/tf" />
+<remap from="/laser/scan" to="/bebop/laser/scan" />
+<remap from="/clock" to="/bebop/clock" />
+<arg name="name" default="bebop" />
+    <arg name="x" default="1.5" />
+    <arg name="y" default="1.0" />
+    <arg name="z" default="0.00" />
+    <arg name="wind_force" default="0.0"/>
+    <arg name="wind_start" default="5.0"/>
+    <arg name="wind_duration" default="10.0"/>
+    <arg name="wind_direction_x" default="1.0"/>
+    <arg name="wind_direction_y" default="0.0"/>
+    <arg name="wind_direction_z" default="0.0"/>
+    
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="paused" value="false" />
+        <arg name="use_sim_time" value="true"/>
+        <arg name="world_name" value = "$(find drone_navigation)/src/map/export.world"/>
+        <arg name="verbose" value="true" />
+    </include>
+    
+        <group ns="bebop">
+        <node pkg="med_uav_control" type="height_ctl.py" name="height_ctl" output="screen"/>
+        <node pkg="med_uav_control" type="attitude_ctl.py" name="attitude_ctl" output="screen"/>
+        <node pkg="med_uav_control" type="horizontal_ctl.py" name="horizontal_ctl" output="screen"/>
+
+        <node pkg="med_uav_control" type="trajectory_to_position_reference.py" 		 name="trajectory_to_position_reference" output="screen" />
+    </group>
+    
+    <include file="$(find med_uav_description)/launch/spawn_bebop.launch">
+        <arg name="name" value="$(arg name)" />
+        <arg name="x" value="$(arg x)"/>
+        <arg name="y" value="$(arg y)"/>
+        <arg name="z" value="$(arg z)"/>
+        <arg name="wind_force" value="$(arg wind_force)"/>
+        <arg name="wind_start" value="$(arg wind_start)"/>
+        <arg name="wind_duration" value="$(arg wind_duration)"/>
+        <arg name="wind_direction_x" value="$(arg wind_direction_x)"/>
+        <arg name="wind_direction_y" value="$(arg wind_direction_y)"/>
+        <arg name="wind_direction_z" value="$(arg wind_direction_z)"/>
+    </include>
+    
+    
+
+    <node pkg="drone_navigation" name="bebopController" type="bebopController.py" output="screen"/>
+
+
+</launch>
+
